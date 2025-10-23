@@ -2564,53 +2564,42 @@ F-statistic:  5483 on 1 and 1996 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>robust_ols3 <span class="ot">&lt;-</span> <span class="fu">lm_robust</span>(humid <span class="sc">~</span> temp, <span class="at">data =</span> dengueclean, <span class="at">se_type =</span> <span class="st">&quot;HC1&quot;</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robust_ols3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>robust <span class="ot">&lt;-</span> <span class="fu">coeftest</span>(ols3, <span class="at">vcov =</span> <span class="fu">vcovHC</span>(ols3, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robust)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm_robust(formula = humid ~ temp, data = dengueclean, se_type = &quot;HC1&quot;)
-
-Standard error type:  HC1 
-
-Coefficients:
-            Estimate Std. Error t value  Pr(&gt;|t|) CI Lower CI Upper   DF
-(Intercept)   2.3615    0.19591   12.05 2.387e-32   1.9773   2.7457 1996
-temp          0.7788    0.01153   67.56 0.000e+00   0.7562   0.8015 1996
-
-Multiple R-squared:  0.7331 ,   Adjusted R-squared:  0.733 
-F-statistic:  4564 on 1 and 1996 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre><code>    Estimate        Std. Error         t value         Pr(&gt;|t|)        
+ Min.   :0.7788   Min.   :0.01153   Min.   :12.05   Min.   :0.000e+00  
+ 1st Qu.:1.1745   1st Qu.:0.05763   1st Qu.:25.93   1st Qu.:5.967e-33  
+ Median :1.5702   Median :0.10372   Median :39.81   Median :1.193e-32  
+ Mean   :1.5702   Mean   :0.10372   Mean   :39.81   Mean   :1.193e-32  
+ 3rd Qu.:1.9659   3rd Qu.:0.14982   3rd Qu.:53.68   3rd Qu.:1.790e-32  
+ Max.   :2.3615   Max.   :0.19591   Max.   :67.56   Max.   :2.387e-32  </code></pre>
 </div>
 </div>
-<p>I think there is heteroskedasticity because for the first model, the residual changes as temperature increases</p>
+<p>I think there is heteroskedasticity because for the first model, the residual changes as temperature increases. Besides, standard error of coefficient of temperature in robust is 0.01153, in first model is 0.01052, which means there is some heteroskedasticity error that was adjusted by the robust model.</p>
 </section>
 <section id="section-13" class="level3">
 <h3 class="anchored" data-anchor-id="section-13">4</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dengueclean<span class="sc">$</span>log_humid <span class="ot">&lt;-</span> <span class="fu">log</span>(dengueclean<span class="sc">$</span>humid)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>model_log <span class="ot">&lt;-</span> <span class="fu">lm_robust</span>(log_humid <span class="sc">~</span> temp, <span class="at">data =</span> dengueclean, <span class="at">se_type =</span> <span class="st">&quot;HC1&quot;</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_log)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>model_log <span class="ot">&lt;-</span> <span class="fu">lm</span>(log_humid <span class="sc">~</span> temp, <span class="at">data =</span> dengueclean)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_log, <span class="at">vcov =</span> <span class="fu">vcovHC</span>(model_log, <span class="at">type =</span> <span class="st">&quot;HC1&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-Call:
-lm_robust(formula = log_humid ~ temp, data = dengueclean, se_type = &quot;HC1&quot;)
+t test of coefficients:
 
-Standard error type:  HC1 
-
-Coefficients:
-            Estimate Std. Error t value Pr(&gt;|t|) CI Lower CI Upper   DF
-(Intercept)  1.65905  0.0182195   91.06        0  1.62332  1.69478 1996
-temp         0.05648  0.0008859   63.75        0  0.05474  0.05822 1996
-
-Multiple R-squared:  0.7702 ,   Adjusted R-squared:  0.7701 
-F-statistic:  4065 on 1 and 1996 DF,  p-value: &lt; 2.2e-16</code></pre>
+              Estimate Std. Error t value  Pr(&gt;|t|)    
+(Intercept) 1.65904882 0.01821951  91.059 &lt; 2.2e-16 ***
+temp        0.05648221 0.00088593  63.755 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 </div>
 </div>
 <p>A one-unit increase of temperature increases humidity by 5.648%</p>
 </section>
 <section id="section-14" class="level3">
 <h3 class="anchored" data-anchor-id="section-14">5</h3>
-<p>For humidity, when temperature increases from -20 to 0. residual deacrease rapidly, while it keeps relatively less fluctuated around 0 when temperature increases from 0 to 30. So the effect of temperature on humidilty is non-linear.</p>
+<p>For humidity, when temperature increases from -20 to 0. residual deacrease rapidly, while it keeps relatively less fluctuated around 0 when temperature increases from 0 to 30. So the effect of temperature on humidity is non-linear.</p>
 </section>
 </section>
 

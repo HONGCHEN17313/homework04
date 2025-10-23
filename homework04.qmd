@@ -110,6 +110,8 @@ library(stargazer)
 library(readr)
 library(tidyr)
 library(estimatr)
+library(sandwich)
+library(lmtest)
 ```
 
 ### 1
@@ -151,22 +153,21 @@ ggplot(dengueclean, aes(x = temp, y = resid)) +
 ```
 
 ```{r}
-robust_ols3 <- lm_robust(humid ~ temp, data = dengueclean, se_type = "HC1")
-summary(robust_ols3)
+robust <- coeftest(ols3, vcov = vcovHC(ols3, type = "HC1"))
+summary(robust)
 ```
 
-I think there is heteroskedasticity because for the first model, the residual changes as temperature increases
+I think there is heteroskedasticity because for the first model, the residual changes as temperature increases. Besides, standard error of coefficient of temperature in robust is 0.01153, in first model is 0.01052, which means there is some heteroskedasticity error that was adjusted by the robust model. 
 
 ### 4
 
 ```{r}
 dengueclean$log_humid <- log(dengueclean$humid)
-model_log <- lm_robust(log_humid ~ temp, data = dengueclean, se_type = "HC1")
-summary(model_log)
+model_log <- lm(log_humid ~ temp, data = dengueclean)
+coeftest(model_log, vcov = vcovHC(model_log, type = "HC1"))
 ```
-
 A one-unit increase of temperature increases humidity by 5.648%
 
 ### 5
 
-For humidity, when temperature increases from -20 to 0. residual deacrease rapidly, while it keeps relatively less fluctuated around 0 when temperature increases from 0 to 30. So the effect of temperature on humidilty is non-linear.
+For humidity, when temperature increases from -20 to 0. residual deacrease rapidly, while it keeps relatively less fluctuated around 0 when temperature increases from 0 to 30. So the effect of temperature on humidity is non-linear.
