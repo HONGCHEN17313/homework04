@@ -1,0 +1,172 @@
+---
+title: "Homework04"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Problem set part 1
+
+### 1
+
+a.  error = Y - 2- 3X = 9 - 2 - 3\*2 = 1
+b.  residual = Y - $\hat{Y}$ = 9 - (1.9 + 3.1 \* 2) = 0.9
+
+### 2
+
+top left: Y = $\beta_0$ + $\beta_1$ X + $\beta_2$ C + $\beta_3$ D + $\epsilon$
+
+top right: Y = $\beta_0$ + $\beta_1$ X
+
+bottom left: Y = $\beta_0$ + $\beta_1$ X
+
+bottom right: Y = $\beta_0$ + $\beta_1$ X
+
+### 3
+
+a.  76.185
+
+b.  19.693
+
+c.  306.553
+
+d.  1256.671 + (-238.853) \* 2 = 778.965
+
+e.  Yes. T-statistic.
+
+For model 2, t = -238.853/19.693 = -12.13; It is 12.13 standard deviation away from 0; 12.13 \> 1.96(95% CI), so it is statistically significant different from 0 at 95% level.
+
+For model 3, t = -251.181/19.28 = -13.03; It is 13.03 standard deviation away from 0; 13.03 \> 1.96(95% CI), so it is statistically significant different from 0 at 95% level.
+
+### 4
+
+AnnualHoursWorked = 10.145 + 110.230 Edu + (-1.581) $Edu^2$
+
+a.  A one year increase in education would increase annual hour worked by 110.230 + (-1.581) \[(educ+1)\^2 - educ\^2\]
+
+b.  110.230 + (-1.581) \* (17\^2 - 16\^2) = 58.057
+
+c.  The relationship gets less positive as educ\^2 will increase more fast as education gets larger.
+
+d.  As Educ\^3, educ\^4 are inter-correlated to educ and educ\^2
+
+### 5
+
+a.  Owning a place to live increases working hours by 50.174 hours.
+
+t = 50.174/32.923 = 1.5239 \< 1.96
+
+So this coefficient is not statistically significantly different from 0 at 95% level.
+
+b.  -923.904 - (-773.412) = -150.492
+
+People with 4 children under 5 works 150.492hours less than people with 3 chidren under 5.
+
+c.  From this table alone, we cannot tell whether there's a statistically significant difference in hours between having 2 children and having 3. If we want to test it, we could use t-statistics but we need the covariance for the two coefficients.
+
+### 6
+
+a.  For homeowner, a one unit increase in education increases annual hours worked by 110.073 + (-53.994) = 56.079
+
+For non-homeowner, a one unit increase in education increases annual hours worked by 110.073
+
+b.  Being a homeowner has 53.994 less annual hours worked for each unit increase in education, compared to those not being a homeowner.
+
+c.  A one-unit increase in education increases annual hours worked by 6.7%
+
+d.  a percent change in education increases annual hours worked by 8.323
+
+e.  Since the dependent variable is log(hours worked), hours worked must be \> 0, so any observation with 0 hours worked is dropped.
+
+### 7
+
+b
+
+### 8
+
+b, c
+
+### 9
+
+For sample selection bias, one could use inverse probability weighting to adjust the demographic proportion in sample to that in population. For example, for under-presented demographic sample, weight it by: population proportion/sample proportion
+
+### 10
+
+a
+
+## Problem set 2
+
+```{r}
+#| echo: false
+#| include: false
+#| execute: false
+library(dplyr)
+library(broom)
+library(MatchIt)
+library(cobalt)
+library(ggplot2)
+library(stargazer)
+library(readr)
+library(tidyr)
+library(estimatr)
+```
+
+### 1
+
+```{r}
+dengue <- read_csv("/Users/miss_red/Desktop/Duke Phd/Fall 2025/statistics/Statistics_Fall_2025/inclass/dengue.csv")
+ols <- glm(NoYes ~ humid + temp, data = dengue, family = binomial)
+summary(ols)
+stargazer(ols, type = "text", title = "OLS Regression: Dengue vs. Humidity & Temperature")
+```
+
+### 2
+
+```{r}
+ols2 <- glm(NoYes ~ humid + temp, data = dengue, family = binomial(link = "logit"))
+summary(ols2)
+```
+
+Holding temperature constant, a one-unit increase in humidity increases odds of observing by 35.6%; holding humiditu constant, a one-unit increase in temperature increases odds of observing by 4.1%
+
+### 3
+
+```{r}
+dengueclean <- dengue |>
+  drop_na(humid)
+ols3 <- lm(humid ~ temp, data = dengueclean)
+summary(ols3)
+dengueclean$resid <- resid(ols3)
+
+ggplot(dengueclean, aes(x = temp, y = resid)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "red") +
+  labs(
+    title = "Residual Plot: Humidity ~ Temperature",
+    x = "Temperature",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+robust_ols3 <- lm_robust(humid ~ temp, data = dengueclean, se_type = "HC1")
+summary(robust_ols3)
+```
+
+I think there is heteroskedasticity because for the first model, the residual changes as temperature increases
+
+### 4
+
+```{r}
+dengueclean$log_humid <- log(dengueclean$humid)
+model_log <- lm_robust(log_humid ~ temp, data = dengueclean, se_type = "HC1")
+summary(model_log)
+```
+
+A one-unit increase of temperature increases humidity by 5.648%
+
+### 5
+
+For humidity, when temperature increases from -20 to 0. residual deacrease rapidly, while it keeps relatively less fluctuated around 0 when temperature increases from 0 to 30. So the effect of temperature on humidilty is non-linear.
